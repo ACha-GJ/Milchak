@@ -70,12 +70,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                images.push(e.target.result);
-                loadedCount++;
-                // 모든 파일이 로드되었을 때 UI 업데이트
-                if (loadedCount === fileArray.length) {
-                    updateUI();
-                }
+                const img = new Image();
+                img.onload = () => {
+                    if (img.height > img.width) {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = img.height;
+                        canvas.height = img.width;
+                        const ctx = canvas.getContext('2d');
+                        
+                        ctx.translate(canvas.width / 2, canvas.height / 2);
+                        ctx.rotate(-90 * Math.PI / 180);
+                        ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                        
+                        images.push(canvas.toDataURL(file.type));
+                    } else {
+                        images.push(e.target.result);
+                    }
+                    
+                    loadedCount++;
+                    // 모든 파일이 로드되었을 때 UI 업데이트
+                    if (loadedCount === fileArray.length) {
+                        updateUI();
+                    }
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         });
