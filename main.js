@@ -1,24 +1,16 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // 상태 변수
     let images = [];
-    let currentSpread = 0; // 현재 펼쳐진 페이지 인덱스 (0: 사진 0,1 / 1: 사진 2,3 등)
-
+    
     // DOM 요소
     const dropzone = document.getElementById('dropzone');
     const fileInput = document.getElementById('fileInput');
-    const photoBookSection = document.getElementById('photoBookSection');
-    const gallerySection = document.getElementById('gallerySection');
-    const galleryContainer = document.getElementById('galleryContainer');
+    const addMoreInput = document.getElementById('addMoreInput');
+    const uploadSection = document.getElementById('uploadSection');
+    const contactSheetSection = document.getElementById('contactSheetSection');
+    const contactSheet = document.getElementById('contactSheet');
     const photoCount = document.getElementById('photoCount');
-    
-    // 책 요소
-    const pageLeft = document.getElementById('pageLeft');
-    const pageRight = document.getElementById('pageRight');
-    const pageNumLeft = document.getElementById('pageNumLeft');
-    const pageNumRight = document.getElementById('pageNumRight');
-    const prevBtn = document.getElementById('prevBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const pageIndicator = document.getElementById('pageIndicator');
+    const addMoreBtn = document.getElementById('addMoreBtn');
+    const printBtn = document.getElementById('printBtn');
 
     // 이벤트 리스너: 드래그 앤 드롭
     dropzone.addEventListener('dragover', (e) => {
@@ -40,132 +32,131 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 이벤트 리스너: 파일 선택
+    // 이벤트 리스너: 파일 선택 (최초 업로드)
     fileInput.addEventListener('change', (e) => {
         if (e.target.files && e.target.files.length > 0) {
             handleFiles(e.target.files);
         }
     });
 
+    // 이벤트 리스너: 사진 추가 버튼 클릭 및 추가 업로드
+    addMoreBtn.addEventListener('click', () => {
+        addMoreInput.click();
+    });
+
+    addMoreInput.addEventListener('change', (e) => {
+        if (e.target.files && e.target.files.length > 0) {
+            handleFiles(e.target.files);
+        }
+    });
+
+    // 이벤트 리스너: 인쇄 / PDF 저장
+    printBtn.addEventListener('click', () => {
+        window.print();
+    });
+
     // 파일 처리 함수
     function handleFiles(files) {
         const fileArray = Array.from(files);
+        let loadedCount = 0;
         
         fileArray.forEach(file => {
-            // 이미지 파일인지 확인
             if (!file.type.startsWith('image/')) {
                 console.warn('이미지 파일이 아닙니다:', file.name);
+                loadedCount++; // 무시된 파일도 카운트하여 진행 보장
+                if (loadedCount === fileArray.length) updateUI();
                 return;
             }
 
             const reader = new FileReader();
             reader.onload = (e) => {
                 images.push(e.target.result);
-                // 모든 파일이 로드되었을 때만 렌더링하기 위해 length 비교
-                // 간소화를 위해 파일 하나 로드될 때마다 렌더링 호출
-                updateUI();
+                loadedCount++;
+                // 모든 파일이 로드되었을 때 UI 업데이트
+                if (loadedCount === fileArray.length) {
+                    updateUI();
+                }
             };
             reader.readAsDataURL(file);
         });
         
-        // 파일 인풋 초기화 (같은 파일 다시 선택 가능하도록)
+        // 인풋 초기화
         fileInput.value = '';
+        addMoreInput.value = '';
     }
 
-    // 사진 삭제 함수
+    // 사진 삭제 함수 (전역)
     window.deleteImage = function(index) {
-        images.splice(index, 1);
-        
-        // 삭제 후 현재 펼침면 인덱스 조정
-        const maxSpread = Math.max(0, Math.ceil(images.length / 2) - 1);
-        if (currentSpread > maxSpread) {
-            currentSpread = maxSpread;
+        if(confirm('이 프레임을 삭제하시겠습니까?')) {
+            images.splice(index, 1);
+            updateUI();
         }
-        
-        updateUI();
     };
 
     // UI 전체 업데이트 함수
     function updateUI() {
         if (images.length === 0) {
-            photoBookSection.style.display = 'none';
-            gallerySection.style.display = 'none';
+            uploadSection.style.display = 'block';
+            contactSheetSection.style.display = 'none';
             photoCount.textContent = '0';
             return;
         }
 
-        photoBookSection.style.display = 'block';
-        gallerySection.style.display = 'block';
+        uploadSection.style.display = 'none';
+        contactSheetSection.style.display = 'block';
         photoCount.textContent = images.length.toString();
 
-        renderGallery();
-        renderBook();
+        renderContactSheet();
     }
 
-    // 갤러리 렌더링
-    function renderGallery() {
-        galleryContainer.innerHTML = '';
+    // 밀착 인화 시트 렌더링
+    function renderContactSheet() {
+        contactSheet.innerHTML = '';
         
-        images.forEach((imgSrc, index) => {
-            const col = document.createElement('div');
-            col.className = 'col-4 col-sm-3 col-md-2';
-            
-            col.innerHTML = `
-                <div class="thumbnail-wrapper">
-                    <img src="${imgSrc}" alt="thumbnail ${index + 1}">
-                    <button class="delete-btn" onclick="deleteImage(${index})" title="삭제">
-                        <i class="bi bi-x"></i>✕
-                    </button>
-                </div>
-            `;
-            
-            galleryContainer.appendChild(col);
-        });
-    }
-
-    // 포토북 렌더링
-    function renderBook() {
-        const totalSpreads = Math.max(1, Math.ceil(images.length / 2));
+        // 브라우저 너비에 따라 한 줄에 보여줄 이미지 수를 동적으로 조정할 수도 있지만,
+        // 밀착 인화 느낌을 위해 한 줄(필름 스트립 하나)당 일정 개수(예: 4~5장)를 설정.
+        const imagesPerStrip = 4;
+        const totalStrips = Math.ceil(images.length / imagesPerStrip);
         
-        // 왼쪽 페이지 (인덱스: currentSpread * 2)
-        const leftIndex = currentSpread * 2;
-        if (leftIndex < images.length) {
-            pageLeft.innerHTML = `<img src="${images[leftIndex]}" alt="Page ${leftIndex + 1}">`;
-        } else {
-            pageLeft.innerHTML = `<span class="empty-page-text">빈 페이지</span>`;
+        let globalIndex = 0;
+
+        for (let i = 0; i < totalStrips; i++) {
+            const stripDiv = document.createElement('div');
+            stripDiv.className = 'film-strip';
+            
+            // 필름 종류 텍스트 (랜덤한 배치 번호 추가)
+            const brandText = document.createElement('div');
+            brandText.className = 'film-brand-text';
+            const batchNum = Math.floor(1000 + Math.random() * 9000);
+            brandText.textContent = `KODAK 400TX ${batchNum}`;
+            stripDiv.appendChild(brandText);
+
+            // 해당 스트립에 들어갈 이미지 렌더링
+            const startIdx = i * imagesPerStrip;
+            const endIdx = Math.min(startIdx + imagesPerStrip, images.length);
+            
+            for (let j = startIdx; j < endIdx; j++) {
+                const frameNum = j + 1;
+                const frameDiv = document.createElement('div');
+                frameDiv.className = 'frame';
+                
+                // 프레임 번호 표시 (예: 1 1A, 2 2A)
+                const displayNum = `${frameNum} ${frameNum}A`;
+
+                frameDiv.innerHTML = `
+                    <div class="frame-image-wrapper" title="클릭해서 삭제" onclick="deleteImage(${j})">
+                        <img src="${images[j]}" alt="Frame ${frameNum}">
+                    </div>
+                    <div class="frame-info">
+                        <span>${j % 2 === 0 ? '▶' : ''}</span>
+                        <span class="frame-number">${displayNum}</span>
+                        <span>${j % 2 !== 0 ? '▶' : ''}</span>
+                    </div>
+                `;
+                stripDiv.appendChild(frameDiv);
+            }
+            
+            contactSheet.appendChild(stripDiv);
         }
-        pageNumLeft.textContent = leftIndex + 1;
-
-        // 오른쪽 페이지 (인덱스: currentSpread * 2 + 1)
-        const rightIndex = currentSpread * 2 + 1;
-        if (rightIndex < images.length) {
-            pageRight.innerHTML = `<img src="${images[rightIndex]}" alt="Page ${rightIndex + 1}">`;
-        } else {
-            pageRight.innerHTML = `<span class="empty-page-text">빈 페이지</span>`;
-        }
-        pageNumRight.textContent = rightIndex + 1;
-
-        // 네비게이션 버튼 상태
-        prevBtn.disabled = currentSpread === 0;
-        nextBtn.disabled = currentSpread >= totalSpreads - 1;
-
-        // 페이지 표시기
-        pageIndicator.textContent = `${currentSpread + 1} / ${totalSpreads} 장 (총 ${images.length} 컷)`;
     }
-
-    // 네비게이션 이벤트
-    prevBtn.addEventListener('click', () => {
-        if (currentSpread > 0) {
-            currentSpread--;
-            renderBook();
-        }
-    });
-
-    nextBtn.addEventListener('click', () => {
-        const totalSpreads = Math.ceil(images.length / 2);
-        if (currentSpread < totalSpreads - 1) {
-            currentSpread++;
-            renderBook();
-        }
-    });
 });
