@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let images = [];
+    let selectedIndices = new Set();
     
     // DOM 요소
     const dropzone = document.getElementById('dropzone');
@@ -11,6 +12,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const photoCount = document.getElementById('photoCount');
     const addMoreBtn = document.getElementById('addMoreBtn');
     const printBtn = document.getElementById('printBtn');
+    const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
+    const selectedCount = document.getElementById('selectedCount');
 
     // 이벤트 리스너: 드래그 앤 드롭
     dropzone.addEventListener('dragover', (e) => {
@@ -52,7 +55,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 이벤트 리스너: 인쇄 / PDF 저장
     printBtn.addEventListener('click', () => {
+        // 인쇄 전 선택 초기화 (선택 표시가 인쇄되지 않도록)
+        if(selectedIndices.size > 0) {
+            selectedIndices.clear();
+            updateSelectionUI();
+            renderContactSheet();
+        }
         window.print();
+    });
+
+    // 이벤트 리스너: 선택 삭제
+    deleteSelectedBtn.addEventListener('click', () => {
+        if(selectedIndices.size === 0) return;
+        
+        if(confirm(`선택한 ${selectedIndices.size}장의 사진을 삭제하시겠습니까?`)) {
+            // 선택된 인덱스들을 내림차순 정렬하여 뒤에서부터 삭제 (인덱스 밀림 방지)
+            const indicesToDelete = Array.from(selectedIndices).sort((a, b) => b - a);
+            indicesToDelete.forEach(index => {
+                images.splice(index, 1);
+            });
+            
+            selectedIndices.clear();
+            updateSelectionUI();
+            updateUI();
+        }
     });
 
     // 파일 처리 함수
@@ -103,13 +129,32 @@ document.addEventListener('DOMContentLoaded', () => {
         addMoreInput.value = '';
     }
 
-    // 사진 삭제 함수 (전역)
-    window.deleteImage = function(index) {
-        if(confirm('이 프레임을 삭제하시겠습니까?')) {
-            images.splice(index, 1);
-            updateUI();
+    // 사진 선택 토글 함수 (전역)
+    window.toggleSelection = function(index) {
+        if (selectedIndices.has(index)) {
+            selectedIndices.delete(index);
+        } else {
+            selectedIndices.add(index);
+        }
+        
+        updateSelectionUI();
+        
+        // 해당 프레임만 DOM 업데이트하여 성능 최적화
+        const frameWrapper = document.getElementById(`frame-wrapper-${index}`);
+        if(frameWrapper) {
+            frameWrapper.classList.toggle('selected');
         }
     };
+    
+    // 선택 UI 상태 업데이트
+    function updateSelectionUI() {
+        if (selectedIndices.size > 0) {
+            deleteSelectedBtn.classList.remove('d-none');
+            selectedCount.textContent = selectedIndices.size;
+        } else {
+            deleteSelectedBtn.classList.add('d-none');
+        }
+    }
 
     // UI 전체 업데이트 함수
     function updateUI() {
@@ -160,9 +205,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 프레임 번호 표시 (예: 1 1A, 2 2A)
                 const displayNum = `${frameNum} ${frameNum}A`;
+                
+                const isSelectedClass = selectedIndices.has(j) ? 'selected' : '';
 
                 frameDiv.innerHTML = `
-                    <div class="frame-image-wrapper" title="클릭해서 삭제" onclick="deleteImage(${j})">
+                    <div id="frame-wrapper-${j}" class="frame-image-wrapper ${isSelectedClass}" title="클릭해서 선택/해제" onclick="toggleSelection(${j})">
                         <img src="${images[j]}" alt="Frame ${frameNum}">
                     </div>
                     <div class="frame-info">
