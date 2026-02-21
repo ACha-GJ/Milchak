@@ -111,6 +111,18 @@ body {
     opacity: 0.8;
 }
 
+/* 확대 보기 모달 스타일 */
+#modalImage {
+    box-shadow: 0 0 50px rgba(255, 255, 255, 0.1);
+    border: 1px solid #333;
+}
+.modal-content {
+    background-color: #000;
+}
+.modal-header {
+    border-bottom-color: #333;
+}
+
 /* 프레임 번호 및 텍스트 (필름 가장자리 정보) */
 .frame-info {
     width: 100%;

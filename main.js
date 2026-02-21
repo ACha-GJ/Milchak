@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let images = [];
     let selectedIndices = new Set();
+    let isSelectionMode = false;
+    const MAX_IMAGES = 36;
     
     // DOM 요소
     const dropzone = document.getElementById('dropzone');
@@ -14,6 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const printBtn = document.getElementById('printBtn');
     const deleteSelectedBtn = document.getElementById('deleteSelectedBtn');
     const selectedCount = document.getElementById('selectedCount');
+    const toggleSelectModeBtn = document.getElementById('toggleSelectModeBtn');
+    
+    // Modal 관련 요소
+    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const modalImage = document.getElementById('modalImage');
 
     // 이벤트 리스너: 드래그 앤 드롭
     dropzone.addEventListener('dragover', (e) => {
@@ -44,6 +51,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 이벤트 리스너: 사진 추가 버튼 클릭 및 추가 업로드
     addMoreBtn.addEventListener('click', () => {
+        if (images.length >= MAX_IMAGES) {
+            alert(`최대 ${MAX_IMAGES}장(35mm 필름 1롤)까지만 업로드할 수 있습니다.`);
+            return;
+        }
         addMoreInput.click();
     });
 
@@ -62,6 +73,26 @@ document.addEventListener('DOMContentLoaded', () => {
             renderContactSheet();
         }
         window.print();
+    });
+
+    // 이벤트 리스너: 선택 모드 토글
+    toggleSelectModeBtn.addEventListener('click', () => {
+        isSelectionMode = !isSelectionMode;
+        
+        if (isSelectionMode) {
+            toggleSelectModeBtn.classList.remove('btn-outline-warning');
+            toggleSelectModeBtn.classList.add('btn-warning');
+            toggleSelectModeBtn.textContent = '선택 모드 ON';
+        } else {
+            toggleSelectModeBtn.classList.add('btn-outline-warning');
+            toggleSelectModeBtn.classList.remove('btn-warning');
+            toggleSelectModeBtn.textContent = '선택 모드';
+            
+            // 선택 모드 해제 시 선택된 항목들 초기화
+            selectedIndices.clear();
+            updateSelectionUI();
+            renderContactSheet();
+        }
     });
 
     // 이벤트 리스너: 선택 삭제
@@ -83,14 +114,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 파일 처리 함수
     function handleFiles(files) {
+        // 현재 이미지 개수 확인
+        if (images.length >= MAX_IMAGES) {
+            alert(`최대 ${MAX_IMAGES}장까지만 업로드할 수 있습니다.`);
+            fileInput.value = '';
+            addMoreInput.value = '';
+            return;
+        }
+
         const fileArray = Array.from(files);
+        const remainingSlots = MAX_IMAGES - images.length;
+        
+        if (fileArray.length > remainingSlots) {
+            alert(`최대 ${MAX_IMAGES}장까지만 업로드 가능합니다. ${remainingSlots}장만 추가됩니다.`);
+        }
+
+        const filesToProcess = fileArray.slice(0, remainingSlots);
         let loadedCount = 0;
         
-        fileArray.forEach(file => {
+        filesToProcess.forEach(file => {
             if (!file.type.startsWith('image/')) {
                 console.warn('이미지 파일이 아닙니다:', file.name);
-                loadedCount++; // 무시된 파일도 카운트하여 진행 보장
-                if (loadedCount === fileArray.length) updateUI();
+                loadedCount++; 
+                if (loadedCount === filesToProcess.length) updateUI();
                 return;
             }
 
@@ -114,8 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     
                     loadedCount++;
-                    // 모든 파일이 로드되었을 때 UI 업데이트
-                    if (loadedCount === fileArray.length) {
+                    if (loadedCount === filesToProcess.length) {
                         updateUI();
                     }
                 };
@@ -129,8 +174,17 @@ document.addEventListener('DOMContentLoaded', () => {
         addMoreInput.value = '';
     }
 
-    // 사진 선택 토글 함수 (전역)
-    window.toggleSelection = function(index) {
+    // 사진 클릭 핸들러 (전역)
+    window.handleImageClick = function(index) {
+        if (isSelectionMode) {
+            toggleSelection(index);
+        } else {
+            showModal(index);
+        }
+    };
+
+    // 사진 선택 토글 함수
+    function toggleSelection(index) {
         if (selectedIndices.has(index)) {
             selectedIndices.delete(index);
         } else {
@@ -139,12 +193,17 @@ document.addEventListener('DOMContentLoaded', () => {
         
         updateSelectionUI();
         
-        // 해당 프레임만 DOM 업데이트하여 성능 최적화
         const frameWrapper = document.getElementById(`frame-wrapper-${index}`);
         if(frameWrapper) {
             frameWrapper.classList.toggle('selected');
         }
-    };
+    }
+
+    // 모달 표시 함수
+    function showModal(index) {
+        modalImage.src = images[index];
+        imageModal.show();
+    }
     
     // 선택 UI 상태 업데이트
     function updateSelectionUI() {
@@ -169,6 +228,15 @@ document.addEventListener('DOMContentLoaded', () => {
         contactSheetSection.style.display = 'block';
         photoCount.textContent = images.length.toString();
 
+        // 추가 버튼 비활성화 상태 업데이트 (36장 도달 시)
+        if (images.length >= MAX_IMAGES) {
+            addMoreBtn.disabled = true;
+            addMoreBtn.textContent = '필름 가득 참';
+        } else {
+            addMoreBtn.disabled = false;
+            addMoreBtn.textContent = '사진 추가';
+        }
+
         renderContactSheet();
     }
 
@@ -176,25 +244,19 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderContactSheet() {
         contactSheet.innerHTML = '';
         
-        // 브라우저 너비에 따라 한 줄에 보여줄 이미지 수를 동적으로 조정할 수도 있지만,
-        // 밀착 인화 느낌을 위해 한 줄(필름 스트립 하나)당 일정 개수(예: 4~5장)를 설정.
         const imagesPerStrip = 4;
         const totalStrips = Math.ceil(images.length / imagesPerStrip);
         
-        let globalIndex = 0;
-
         for (let i = 0; i < totalStrips; i++) {
             const stripDiv = document.createElement('div');
             stripDiv.className = 'film-strip';
             
-            // 필름 종류 텍스트 (랜덤한 배치 번호 추가)
             const brandText = document.createElement('div');
             brandText.className = 'film-brand-text';
             const batchNum = Math.floor(1000 + Math.random() * 9000);
             brandText.textContent = `KODAK 400TX ${batchNum}`;
             stripDiv.appendChild(brandText);
 
-            // 해당 스트립에 들어갈 이미지 렌더링
             const startIdx = i * imagesPerStrip;
             const endIdx = Math.min(startIdx + imagesPerStrip, images.length);
             
@@ -203,13 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 const frameDiv = document.createElement('div');
                 frameDiv.className = 'frame';
                 
-                // 프레임 번호 표시 (예: 1 1A, 2 2A)
                 const displayNum = `${frameNum} ${frameNum}A`;
-                
                 const isSelectedClass = selectedIndices.has(j) ? 'selected' : '';
 
                 frameDiv.innerHTML = `
-                    <div id="frame-wrapper-${j}" class="frame-image-wrapper ${isSelectedClass}" title="클릭해서 선택/해제" onclick="toggleSelection(${j})">
+                    <div id="frame-wrapper-${j}" class="frame-image-wrapper ${isSelectedClass}" title="${isSelectionMode ? '클릭해서 선택' : '클릭해서 확대'}" onclick="handleImageClick(${j})">
                         <img src="${images[j]}" alt="Frame ${frameNum}">
                     </div>
                     <div class="frame-info">
