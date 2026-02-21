@@ -248,7 +248,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contactSheet.innerHTML = '';
         
         // 브라우저 너비에 관계없이 필름 스트립 형태 유지 (반응형보다는 고정된 인화지 느낌)
-        const imagesPerStrip = 5; // 한 줄에 5장 (표준 밀착 인화 느낌)
+        const imagesPerStrip = 6; // 한 줄에 6장 (요청 사항 반영)
         const totalStrips = Math.ceil(images.length / imagesPerStrip);
         
         for (let i = 0; i < totalStrips; i++) {
