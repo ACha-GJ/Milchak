@@ -31,7 +31,7 @@ body {
     background-color: #fff; /* 흰색 인화지 */
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 0; /* 스트립 간 간격 제거 */
     padding: 40px; /* 인화지 여백 */
     box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* 종이 그림자 */
     margin-bottom: 50px;
@@ -55,7 +55,7 @@ body {
     background-size: 30px 100%;
     background-repeat: repeat-x;
     
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* 필름 두께감 */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* 미세한 구분선만 추가 */
 }
 
 /* 스크롤바 스타일 제거 (필요 없음) */
