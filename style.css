@@ -42,20 +42,83 @@ body {
     width: 100%;
     background-color: #111; /* 필름 베이스 (진한 검정) */
     position: relative;
-    padding: 32px 10px; /* 좌우 여백 줄임 */
+    padding: 38px 10px; /* 위아래 스프로킷 홀 및 정보 표시 공간 */
     display: flex;
     justify-content: space-between; /* 6장이 균등하게 배치되도록 */
     gap: 8px; /* 간격 줄임 */
     overflow: hidden; /* 스크롤 제거 */
     
-    /* 필름 구멍 (Sprocket holes) 패턴 - 배경색(흰색 인화지)이 보이도록 */
+    /* 필름 구멍 (Sprocket holes) 패턴 - 둥근 모서리 직사각형 SVG */
     background-image: 
-        radial-gradient(circle 3.5px at 15px 12px, #fff 100%, transparent 0),
-        radial-gradient(circle 3.5px at 15px calc(100% - 12px), #fff 100%, transparent 0);
+        url("data:image/svg+xml,%3Csvg width='30' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='12' width='10' height='14' rx='2' ry='2' fill='white'/%3E%3Crect x='10' y='calc(100%25 - 26px)' width='10' height='14' rx='2' ry='2' fill='white'/%3E%3C/svg%3E");
     background-size: 30px 100%;
     background-repeat: repeat-x;
     
     border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* 미세한 구분선만 추가 */
+}
+
+/* 필름 가장자리 정보 (바코드, 브랜드 등) */
+.edge-info-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* 클릭 방해 금지 */
+    z-index: 10;
+}
+
+.edge-top, .edge-bottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding-left: 45px; /* 스프로킷 홀 피해서 */
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.edge-top { top: 0; }
+.edge-bottom { bottom: 0; }
+
+.barcode {
+    height: 12px;
+    width: 80px;
+    background: repeating-linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.6),
+        rgba(255, 255, 255, 0.6) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    margin-right: 20px;
+    opacity: 0.8;
+}
+
+.edge-text {
+    margin-right: 30px;
+    white-space: nowrap;
+}
+
+.frame-number-mark {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* 상단 프레임 번호 */
+.frame-num-top {
+    bottom: 5px; /* edge-top 내부에서의 위치 */
+}
+
+/* 하단 프레임 번호 */
+.frame-num-bottom {
+    top: 5px; /* edge-bottom 내부에서의 위치 */
 }
 
 /* 스크롤바 스타일 제거 (필요 없음) */
