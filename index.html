@@ -11,10 +11,10 @@
     <!-- Custom CSS -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-dark text-light">
-    <nav class="navbar navbar-expand-lg navbar-dark bg-black shadow-sm mb-4 border-bottom border-secondary">
+<body class="bg-light text-dark">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" style="font-family: 'Roboto Mono', monospace;" href="#">🎞️ KODAK TRI-X PAN FILM</a>
+            <a class="navbar-brand fw-bold" style="font-family: 'Roboto Mono', monospace;" href="#">🎞️ DIGITAL CONTACT SHEET</a>
         </div>
     </nav>
 
@@ -22,14 +22,14 @@
         <!-- 1. 사진 업로드 영역 -->
         <div class="row mb-4" id="uploadSection">
             <div class="col-12">
-                <div class="card bg-secondary text-light shadow-sm border-0">
-                    <div class="card-body p-4 text-center">
+                <div class="card bg-white text-dark shadow-sm border">
+                    <div class="card-body p-5 text-center">
                         <h5 class="card-title fw-bold mb-3">밀착 인화할 사진 업로드</h5>
-                        <p class="text-light mb-4 opacity-75">드래그 앤 드롭으로 사진을 추가하거나 버튼을 클릭하세요.</p>
+                        <p class="text-muted mb-4">드래그 앤 드롭으로 사진을 추가하거나 버튼을 클릭하세요.</p>
                         
-                        <div id="dropzone" class="dropzone d-flex flex-column align-items-center justify-content-center p-5 rounded border-light">
-                            <span class="fs-5">여기로 사진을 끌어다 놓으세요</span>
-                            <label class="btn btn-light mt-3 cursor-pointer fw-bold text-dark">
+                        <div id="dropzone" class="dropzone d-flex flex-column align-items-center justify-content-center p-5 rounded">
+                            <span class="fs-5 text-secondary">여기로 사진을 끌어다 놓으세요</span>
+                            <label class="btn btn-dark mt-3 cursor-pointer fw-bold">
                                 파일 선택하기
                                 <input type="file" id="fileInput" multiple accept="image/*" class="d-none">
                             </label>
@@ -41,20 +41,26 @@
 
         <!-- 2. 밀착 인화 뷰어 영역 -->
         <div class="row" id="contactSheetSection" style="display: none;">
-            <div class="col-12 mb-3 d-flex justify-content-between align-items-center">
-                <h5 class="fw-bold m-0" style="font-family: 'Roboto Mono', monospace;">CONTACT SHEET <span class="badge bg-light text-dark ms-2" id="photoCount">0</span>/36</h5>
+            <div class="col-12 mb-3 d-flex justify-content-between align-items-end border-bottom pb-3">
                 <div>
-                    <button class="btn btn-outline-warning btn-sm me-2" id="toggleSelectModeBtn">선택 모드</button>
-                    <button class="btn btn-outline-danger btn-sm me-2 d-none" id="deleteSelectedBtn">선택 삭제 <span class="badge bg-danger ms-1" id="selectedCount">0</span></button>
-                    <button class="btn btn-outline-light btn-sm me-2" id="addMoreBtn">사진 추가</button>
-                    <button class="btn btn-light btn-sm fw-bold text-dark" id="printBtn">인쇄 / PDF 저장</button>
+                    <h5 class="fw-bold m-0 text-uppercase" style="font-family: 'Roboto Mono', monospace; letter-spacing: -1px;">Contact Sheet</h5>
+                    <small class="text-muted">FILM ID: <span id="filmId">KODAK-400TX</span> | DATE: <span id="currentDate">2026-02-20</span></small>
+                </div>
+                <div>
+                    <span class="badge bg-dark text-white me-2 mb-2 p-2 rounded-0" style="font-weight: normal; font-family: 'Roboto Mono';">COUNT: <span id="photoCount">0</span>/36</span>
+                    <div class="d-flex gap-1">
+                        <button class="btn btn-outline-dark btn-sm rounded-0" id="toggleSelectModeBtn">SELECT</button>
+                        <button class="btn btn-outline-danger btn-sm rounded-0 d-none" id="deleteSelectedBtn">DELETE <span id="selectedCount">0</span></button>
+                        <button class="btn btn-outline-dark btn-sm rounded-0" id="addMoreBtn">ADD (+)</button>
+                        <button class="btn btn-dark btn-sm fw-bold rounded-0" id="printBtn">PRINT / PDF</button>
+                    </div>
                 </div>
                 <!-- 숨겨진 파일 인풋 (추가 업로드용) -->
                 <input type="file" id="addMoreInput" multiple accept="image/*" class="d-none">
             </div>
             
-            <div class="col-12">
-                <div class="contact-sheet-container bg-black p-3 p-md-5 mx-auto shadow-lg" id="contactSheet">
+            <div class="col-12 d-flex justify-content-center">
+                <div class="contact-sheet-container mx-auto" id="contactSheet">
                     <!-- 필름 스트립들이 여기에 생성됩니다. -->
                 </div>
             </div>
@@ -64,12 +70,11 @@
     <!-- 이미지 확대 보기 모달 -->
     <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content bg-black border-secondary">
-                <div class="modal-header border-secondary">
-                    <h5 class="modal-title text-light" style="font-family: 'Roboto Mono', monospace;">FRAME PREVIEW</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body p-0 d-flex justify-content-center bg-black">
+                <div class="modal-body p-4 d-flex justify-content-center">
                     <img src="" id="modalImage" class="img-fluid" alt="Expanded View" style="max-height: 80vh;">
                 </div>
             </div>

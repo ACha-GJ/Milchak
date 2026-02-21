@@ -18,6 +18,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const selectedCount = document.getElementById('selectedCount');
     const toggleSelectModeBtn = document.getElementById('toggleSelectModeBtn');
     
+    // 날짜 표시
+    document.getElementById('currentDate').textContent = new Date().toISOString().split('T')[0];
+    
     // Modal 관련 요소
     const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
     const modalImage = document.getElementById('modalImage');
@@ -80,13 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
         isSelectionMode = !isSelectionMode;
         
         if (isSelectionMode) {
-            toggleSelectModeBtn.classList.remove('btn-outline-warning');
-            toggleSelectModeBtn.classList.add('btn-warning');
-            toggleSelectModeBtn.textContent = '선택 모드 ON';
+            toggleSelectModeBtn.classList.remove('btn-outline-dark');
+            toggleSelectModeBtn.classList.add('btn-dark');
+            toggleSelectModeBtn.textContent = 'SELECT MODE ON';
         } else {
-            toggleSelectModeBtn.classList.add('btn-outline-warning');
-            toggleSelectModeBtn.classList.remove('btn-warning');
-            toggleSelectModeBtn.textContent = '선택 모드';
+            toggleSelectModeBtn.classList.add('btn-outline-dark');
+            toggleSelectModeBtn.classList.remove('btn-dark');
+            toggleSelectModeBtn.textContent = 'SELECT';
             
             // 선택 모드 해제 시 선택된 항목들 초기화
             selectedIndices.clear();
@@ -231,10 +234,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // 추가 버튼 비활성화 상태 업데이트 (36장 도달 시)
         if (images.length >= MAX_IMAGES) {
             addMoreBtn.disabled = true;
-            addMoreBtn.textContent = '필름 가득 참';
+            addMoreBtn.textContent = 'FULL';
         } else {
             addMoreBtn.disabled = false;
-            addMoreBtn.textContent = '사진 추가';
+            addMoreBtn.textContent = 'ADD (+)';
         }
 
         renderContactSheet();
@@ -244,7 +247,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderContactSheet() {
         contactSheet.innerHTML = '';
         
-        const imagesPerStrip = 4;
+        // 브라우저 너비에 관계없이 필름 스트립 형태 유지 (반응형보다는 고정된 인화지 느낌)
+        const imagesPerStrip = 5; // 한 줄에 5장 (표준 밀착 인화 느낌)
         const totalStrips = Math.ceil(images.length / imagesPerStrip);
         
         for (let i = 0; i < totalStrips; i++) {
@@ -281,6 +285,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 stripDiv.appendChild(frameDiv);
             }
             
+            // 빈 공간 채우기 (필름 5장 길이 유지)
+            if ((endIdx - startIdx) < imagesPerStrip) {
+                const emptySlots = imagesPerStrip - (endIdx - startIdx);
+                for (let k = 0; k < emptySlots; k++) {
+                     const emptyFrame = document.createElement('div');
+                     emptyFrame.className = 'frame';
+                     emptyFrame.style.visibility = 'hidden'; // 공간만 차지
+                     stripDiv.appendChild(emptyFrame);
+                }
+            }
+
             contactSheet.appendChild(stripDiv);
         }
     }
