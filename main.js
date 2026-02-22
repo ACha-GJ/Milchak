@@ -147,6 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
+                    let imageData = {
+                        dataUrl: '',
+                        isVertical: false
+                    };
+
                     if (img.height > img.width) {
                         const canvas = document.createElement('canvas');
                         canvas.width = img.height;
@@ -157,10 +162,14 @@ document.addEventListener('DOMContentLoaded', () => {
                         ctx.rotate(-90 * Math.PI / 180);
                         ctx.drawImage(img, -img.width / 2, -img.height / 2);
                         
-                        images.push(canvas.toDataURL(file.type));
+                        imageData.dataUrl = canvas.toDataURL(file.type);
+                        imageData.isVertical = true;
                     } else {
-                        images.push(e.target.result);
+                        imageData.dataUrl = e.target.result;
+                        imageData.isVertical = false;
                     }
+                    
+                    images.push(imageData);
                     
                     loadedCount++;
                     if (loadedCount === filesToProcess.length) {
@@ -204,7 +213,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 모달 표시 함수
     function showModal(index) {
-        modalImage.src = images[index];
+        const image = images[index];
+        modalImage.src = image.dataUrl;
+        
+        if (image.isVertical) {
+            modalImage.classList.add('rotate-90');
+        } else {
+            modalImage.classList.remove('rotate-90');
+        }
+        
         imageModal.show();
     }
     
@@ -304,7 +321,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 frameDiv.innerHTML = `
                     <div id="frame-wrapper-${j}" class="frame-image-wrapper ${isSelectedClass}" title="${isSelectionMode ? '클릭해서 선택' : '클릭해서 확대'}" onclick="handleImageClick(${j})">
-                        <img src="${images[j]}" alt="Frame ${frameNum}">
+                        <img src="${images[j].dataUrl}" alt="Frame ${frameNum}">
                     </div>
                 `;
                 stripDiv.appendChild(frameDiv);
