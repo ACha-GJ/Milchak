@@ -1,21 +1,21 @@
 body {
     font-family: 'Roboto Mono', monospace;
-    background-color: #050505; /* 거의 검정에 가까운 진한 회색 */
+    background-color: #121212; /* 진한 어두운 회색 배경 */
     color: #e0e0e0;
 }
 
 /* 드래그 앤 드롭 영역 */
 .dropzone {
-    border: 2px dashed #444;
-    background-color: #1a1a1a;
+    border: 2px dashed #999;
+    background-color: #fff;
     transition: all 0.3s ease;
     cursor: pointer;
-    color: #aaa;
+    color: #555;
 }
 
 .dropzone.dragover {
-    background-color: #2a2a2a;
-    border-color: #666;
+    background-color: #e9ecef;
+    border-color: #333;
     transform: scale(1.02);
 }
 
@@ -23,64 +23,205 @@ body {
     cursor: pointer;
 }
 
-/* 카드 및 기타 요소 어둡게 */
-.card {
-    background-color: #111 !important;
-    border-color: #333 !important;
-    color: #e0e0e0 !important;
-}
-
-.text-muted {
-    color: #888 !important;
-}
-
 /* 밀착 인화(Contact Sheet) 컨테이너 (인화지) */
 .contact-sheet-container {
     width: 100%;
-    max-width: 1100px;
+    max-width: 1100px; /* A4 비율 혹은 적절한 너비 */
     min-height: 800px;
-    background-color: #151515; /* 어두운 인화지 느낌 */
+    background-color: #fff; /* 흰색 인화지 */
     display: flex;
     flex-direction: column;
-    gap: 0;
-    padding: 40px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+    gap: 0; /* 스트립 간 간격 제거 */
+    padding: 40px; /* 인화지 여백 */
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* 종이 그림자 */
     margin-bottom: 50px;
-    border: 1px solid #222;
 }
 
 /* 필름 스트립 디자인 */
 .film-strip {
     width: 100%;
-    background-color: #0a0a0a; /* 더 진한 필름 베이스 */
+    background-color: #111; /* 필름 베이스 (진한 검정) */
     position: relative;
-    padding: 38px 10px;
+    padding: 38px 10px; /* 위아래 스프로킷 홀 및 정보 표시 공간 */
     display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    overflow: hidden;
+    justify-content: space-between; /* 6장이 균등하게 배치되도록 */
+    gap: 8px; /* 간격 줄임 */
+    overflow: hidden; /* 스크롤 제거 */
     
+    /* 필름 구멍 (Sprocket holes) 패턴 - 둥근 모서리 직사각형 SVG (색상: #ddd) */
     background-image: 
-        url("data:image/svg+xml,%3Csvg width='30' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='12' width='10' height='14' rx='2' ry='2' fill='%23333'/%3E%3Crect x='10' y='calc(100%25 - 26px)' width='10' height='14' rx='2' ry='2' fill='%23333'/%3E%3C/svg%3E");
+        url("data:image/svg+xml,%3Csvg width='30' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='12' width='10' height='14' rx='2' ry='2' fill='%23ddd'/%3E%3Crect x='10' y='calc(100%25 - 26px)' width='10' height='14' rx='2' ry='2' fill='%23ddd'/%3E%3C/svg%3E");
     background-size: 30px 100%;
     background-repeat: repeat-x;
     
-    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* 미세한 구분선만 추가 */
 }
 
-/* 필름 가장자리 정보 */
-.edge-top, .edge-bottom {
-    color: rgba(255, 255, 255, 0.4);
+/* 필름 가장자리 정보 (바코드, 브랜드 등) */
+.edge-info-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none; /* 클릭 방해 금지 */
+    z-index: 10;
 }
+
+.edge-top, .edge-bottom {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    padding-left: 45px; /* 스프로킷 홀 피해서 */
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.edge-top { top: 0; }
+.edge-bottom { bottom: 0; }
 
 .barcode {
+    height: 12px;
+    width: 80px;
     background: repeating-linear-gradient(
         90deg,
-        rgba(255, 255, 255, 0.3),
-        rgba(255, 255, 255, 0.3) 1px,
+        rgba(255, 255, 255, 0.6),
+        rgba(255, 255, 255, 0.6) 1px,
         transparent 1px,
         transparent 3px
     );
+    margin-right: 20px;
+    opacity: 0.8;
+}
+
+.edge-text {
+    margin-right: 30px;
+    white-space: nowrap;
+}
+
+.frame-number-mark {
+    position: absolute;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 10px;
+    font-weight: bold;
+}
+
+/* 상단 프레임 번호 */
+.frame-num-top {
+    bottom: 5px; /* edge-top 내부에서의 위치 */
+}
+
+/* 하단 프레임 번호 */
+.frame-num-bottom {
+    top: 5px; /* edge-bottom 내부에서의 위치 */
+}
+
+/* 스크롤바 스타일 제거 (필요 없음) */
+.film-strip::-webkit-scrollbar {
+    display: none;
+}
+
+/* 개별 사진 프레임 */
+.frame {
+    flex: 1; /* 남은 공간을 균등하게 차지 */
+    min-width: 0; /* flex item이 content보다 작아질 수 있게 함 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.frame-image-wrapper {
+    width: 100%;
+    aspect-ratio: 3 / 2; /* 3:2 비율 유지 */
+    height: auto; /* 높이는 너비에 따라 자동 조절 */
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    border: none; /* 테두리 제거 (필름 일체감) */
+    cursor: pointer;
+}
+
+/* 흑백 필름 필터 효과 */
+.frame-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(100%) contrast(1.3) brightness(0.9); /* 대비 강화, 밝기 약간 감소 */
+    transition: filter 0.3s;
+}
+
+.frame-image-wrapper img:hover {
+    filter: grayscale(0%) contrast(1) brightness(1);
+}
+
+/* 선택된 사진 스타일 */
+.frame-image-wrapper.selected {
+    outline: 4px solid #d63384; /* 핫핑크/레드 계열로 마킹 펜 느낌 */
+    box-shadow: 0 0 10px rgba(214, 51, 132, 0.5);
+}
+.frame-image-wrapper.selected img {
+    filter: grayscale(0%) contrast(1);
+    opacity: 0.9;
+}
+
+/* 확대 보기 모달 스타일 */
+#modalImage {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    border: 10px solid #fff; /* 사진 인화 테두리 느낌 */
+    transition: transform 0.3s ease;
+}
+.modal-content {
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+.modal-header {
+    border: none;
+}
+.modal-header .btn-close {
+    filter: invert(1); /* 닫기 버튼 흰색으로 */
+}
+.modal-title {
+    display: none; /* 심플하게 이미지 위주 */
+}
+
+
+/* 프레임 번호 및 텍스트 (필름 가장자리 정보) - 흰색/투명 느낌 */
+.frame-info {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.7); /* 반투명 흰색 */
+    font-size: 10px;
+    margin-top: 4px;
+    letter-spacing: 0.5px;
+    font-weight: normal;
+    font-family: 'Roboto Mono', monospace;
+}
+
+.frame-number {
+    font-size: 12px;
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.film-brand-text {
+    position: absolute;
+    top: 8px;
+    left: 45px; /* 스프로킷 홀 피해서 배치 */
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    pointer-events: none;
 }
 
 /* 사진 회전 (세로 사진용) */
@@ -90,59 +231,28 @@ body {
     max-height: 90vw !important;
 }
 
-/* 개별 사진 프레임 */
-.frame-image-wrapper {
-    background-color: #000;
-}
-
-.frame-image-wrapper img {
-    filter: grayscale(100%) contrast(1.2) brightness(0.8);
-}
-
-/* 선택된 사진 스타일 */
-.frame-image-wrapper.selected {
-    outline: 3px solid #ff2d55;
-    box-shadow: 0 0 15px rgba(255, 45, 85, 0.4);
-}
-
-/* 확대 보기 모달 스타일 */
-#modalImage {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
-    border: 5px solid #222;
-    transition: transform 0.3s ease;
-}
-.modal-content {
-    background-color: transparent;
-    border: none;
-}
-.modal-header .btn-close {
-    filter: invert(1);
-}
-
-/* 버튼 스타일 조정 */
-.btn-outline-dark {
-    color: #e0e0e0;
-    border-color: #444;
-}
-.btn-outline-dark:hover {
-    background-color: #333;
-    color: #fff;
-    border-color: #555;
-}
-
 /* 프린트 시 스타일 */
 @media print {
     body {
         background-color: #fff;
-        color: #000;
+    }
+    nav, #uploadSection, #addMoreBtn, #printBtn, #toggleSelectModeBtn, #deleteSelectedBtn, .navbar {
+        display: none !important;
     }
     .contact-sheet-container {
-        background-color: #fff;
-        border: none;
         box-shadow: none;
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        gap: 10px;
     }
     .film-strip {
-        background-color: #000 !important;
-        background-image: url("data:image/svg+xml,%3Csvg width='30' height='100%25' xmlns='http://www.w3.org/2000/svg'%3E%3Crect x='10' y='12' width='10' height='14' rx='2' ry='2' fill='%23ddd'/%3E%3Crect x='10' y='calc(100%25 - 26px)' width='10' height='14' rx='2' ry='2' fill='%23ddd'/%3E%3C/svg%3E");
+        background-color: #000 !important; /* 프린트 시에도 검정 배경 강제 */
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        page-break-inside: avoid;
+        overflow: hidden;
+        flex-wrap: wrap; 
     }
+    /* 프린트 시에는 스프로킷 홀이 흰색 종이 색상이 됨 */
 }
