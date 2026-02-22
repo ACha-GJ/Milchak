@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let selectedIndices = new Set();
     let isSelectionMode = false;
     let currentModalIndex = -1;
+    let isModalOpen = false;
     const MAX_IMAGES = 36;
     
     // DOM 요소
@@ -23,8 +24,17 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('currentDate').textContent = new Date().toISOString().split('T')[0];
     
     // Modal 관련 요소
-    const imageModal = new bootstrap.Modal(document.getElementById('imageModal'));
+    const imageModalElement = document.getElementById('imageModal');
+    const imageModal = new bootstrap.Modal(imageModalElement);
     const modalImage = document.getElementById('modalImage');
+
+    // 모달 상태 추적
+    imageModalElement.addEventListener('shown.bs.modal', () => {
+        isModalOpen = true;
+    });
+    imageModalElement.addEventListener('hidden.bs.modal', () => {
+        isModalOpen = false;
+    });
 
     // 이벤트 리스너: 드래그 앤 드롭
     dropzone.addEventListener('dragover', (e) => {
@@ -199,7 +209,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 키보드 이벤트 리스너 (방향키로 사진 이동)
     document.addEventListener('keydown', (e) => {
         // 모달이 열려 있을 때만 동작
-        if (document.getElementById('imageModal').classList.contains('show')) {
+        if (isModalOpen) {
             if (e.key === 'ArrowRight') {
                 const nextIndex = (currentModalIndex + 1) % images.length;
                 showModal(nextIndex);
