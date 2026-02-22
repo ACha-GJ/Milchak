@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let images = [];
     let selectedIndices = new Set();
     let isSelectionMode = false;
+    let currentModalIndex = -1;
     const MAX_IMAGES = 36;
     
     // DOM 요소
@@ -195,6 +196,29 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // 키보드 이벤트 리스너 (방향키로 사진 이동)
+    document.addEventListener('keydown', (e) => {
+        // 모달이 열려 있을 때만 동작
+        if (document.getElementById('imageModal').classList.contains('show')) {
+            if (e.key === 'ArrowRight') {
+                const nextIndex = (currentModalIndex + 1) % images.length;
+                showModal(nextIndex);
+            } else if (e.key === 'ArrowLeft') {
+                const prevIndex = (currentModalIndex - 1 + images.length) % images.length;
+                showModal(prevIndex);
+            } else if (e.key === 'Escape') {
+                imageModal.hide();
+            }
+        }
+    });
+
+    // 모달 바깥 영역 클릭 시 닫기 (추가적인 확실한 처리)
+    document.getElementById('imageModal').addEventListener('click', (e) => {
+        if (e.target.id === 'imageModal' || e.target.classList.contains('modal-body') || e.target.classList.contains('modal-dialog')) {
+            imageModal.hide();
+        }
+    });
+
     // 사진 선택 토글 함수
     function toggleSelection(index) {
         if (selectedIndices.has(index)) {
@@ -213,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 모달 표시 함수
     function showModal(index) {
+        currentModalIndex = index;
         const image = images[index];
         modalImage.src = image.dataUrl;
         
