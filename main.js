@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 자동 푸시 기능 테스트 주석 (2026-02-22)
     let images = [];
     let selectedIndices = new Set();
     let isSelectionMode = false;
